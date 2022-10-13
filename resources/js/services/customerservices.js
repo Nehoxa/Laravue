@@ -1,35 +1,32 @@
 import { ref } from "vue";
 import axios from "axios";
-import router from '../router/index.js';
 
+export function useCustomers() {
+    const errors = ref("");
+    const customers = ref([]);
 
-export default function useCustomers() {
+    const getCustomers = async () => {
+        let response = await axios.get("/api/customers");
+        customers.value = response.data.data;
+    };
 
-  const errors = ref('');
-  const customers = ref([]);
+    const createCustomer = async (data) => {
+        try {
+            await axios.post("/api/customers", data);
+            // await router.push({ name: 'customers.index' });
+        } catch (error) {
+            const createCustomerErrors = error.response.data;
 
-  const getCustomers = async () => {
-    let response = await axios.get('/api/customers');
-    customers.value = response.data.data;
-  };
+            for (const key in createCustomerErrors) {
+                errors.value += createCustomerErrors[key][0] + " ";
+            }
+        }
+    };
 
-  const createCustomer = async (data) => {
-    try {
-      await axios.post('/api/customers', data);
-      await router.push({ name: 'customers.index' });  
-    } catch (error) {
-      const createCustomerErrors = error.response.data;
-
-      for (const key in createCustomerErrors) {
-        errors.value += createCustomerErrors[key][0] + ' '
-      }
-    }
-  }
-
-  return {
-    customers,
-    errors,
-    getCustomers,
-    createCustomer
-  }
+    return {
+        customers,
+        errors,
+        getCustomers,
+        createCustomer,
+    };
 }
